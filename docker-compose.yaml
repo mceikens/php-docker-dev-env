@@ -1,0 +1,101 @@
+version: '3.8'
+services:
+  db:
+    image: ${DATABASE_IMAGE}
+    container_name: ${PROJECT_NAME}_db
+    restart: on-failure
+    privileged: true
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+    networks:
+      - default
+      - internal
+      - external
+    volumes:
+      - './initdb:/docker-entrypoint-initdb.d'
+    command: [ 'mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci' ]
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: ${PROJECT_NAME}_pma
+    restart: on-failure
+    privileged: true
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+    php:
+      container_name: ${PROJECT_NAME}_php
+      build:
+        args:
+          PHP_IMAGE: ${PHP_IMAGE}
+          PROJECT_VOLUME: ${PROJECT_VOLUME}
+        context: .
+        dockerfile: ./build/php/Dockerfile
+      working_dir: /var/www
+      privileged: true
+      environment:
+        XDEBUG_ENABLED: ${XDEBUG_ENABLED}
+        XDEBUG_REMOTE_AUTOSTART: ${XDEBUG_REMOTE_AUTOSTART}
+        XDEBUG_MAXNESTING_LEVEL: ${XDEBUG_MAXNESTING_LEVEL}
+        XDEBUG_REMOTE_CONNECT_BACK: ${XDEBUG_REMOTE_CONNECT_BACK}
+        XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+        PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
+      networks:
+        - default
+        - internal
+        - external
+      volumes:
+        - ${PROJECT_VOLUME}:/var/www:rw,cached
+      links:
+        - db:db
+  php:
+    container_name: ${PROJECT_NAME}_php
+    build:
+      args:
+      context: .
+      dockerfile: ./build/php/Dockerfile
+    working_dir: /var/www
+    privileged: true
+    restart: on-failure
+    environment:
+      XDEBUG_ENABLED: ${XDEBUG_ENABLED}
+      XDEBUG_REMOTE_AUTOSTART: ${XDEBUG_REMOTE_AUTOSTART}
+      XDEBUG_MAXNESTING_LEVEL: ${XDEBUG_MAXNESTING_LEVEL}
+      XDEBUG_REMOTE_CONNECT_BACK: ${XDEBUG_REMOTE_CONNECT_BACK}
+      XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
+    networks:
+      - default
+      - internal
+      - external
+    volumes:
+      - ./app:/var/www:rw,cached
+    links:
+      - db:db
+  nginx:
+    container_name: ${PROJECT_NAME}_nginx
+    image: ${NGINX_IMAGE}
+    restart: on-failure
+    privileged: true
+    networks:
+      - default
+      - internal
+      - external
+    volumes:
+      - ./build/nginx/conf.d:/etc/nginx/conf.d/
+      - ./app:/var/www:rw,cached
+    ports:
+      - 80:80
+      - 443:443
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:80"
+networks:
+  internal:
+    driver: bridge
+  external:
+    external: true

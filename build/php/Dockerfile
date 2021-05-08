@@ -1,4 +1,4 @@
-FROM php:7.3-fpm
+FROM php:7.4-fpm
 
 USER root
 
@@ -38,11 +38,10 @@ RUN apt-get install -y \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-configure gd --with-gd --with-webp-dir --with-jpeg-dir --with-png-dir --with-zlib-dir --with-xpm-dir --with-freetype-dir
+RUN docker-php-ext-configure gd --with-webp=/usr/include/ --with-jpeg=/usr/include/ --with-xpm=/usr/include/ --with-freetype=/usr/include/
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-install iconv \
                           intl \
-                          mbstring \
                           opcache \
                           pdo \
                           soap \

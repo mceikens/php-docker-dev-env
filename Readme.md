@@ -54,3 +54,5 @@ e.g.
 > docker-compose exec php bash
 
 ### Database connection
+
+> mysql://YOUR_USER_NAME:YOUR_PASSWORD@db/YOUR_DATABASE_NAME

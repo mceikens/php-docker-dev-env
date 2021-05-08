@@ -26,35 +26,9 @@ services:
       - 8080:80
     environment:
       - PMA_ARBITRARY=1
-    php:
-      container_name: ${PROJECT_NAME}_php
-      build:
-        args:
-          PHP_IMAGE: ${PHP_IMAGE}
-          PROJECT_VOLUME: ${PROJECT_VOLUME}
-        context: .
-        dockerfile: ./build/php/Dockerfile
-      working_dir: /var/www
-      privileged: true
-      environment:
-        XDEBUG_ENABLED: ${XDEBUG_ENABLED}
-        XDEBUG_REMOTE_AUTOSTART: ${XDEBUG_REMOTE_AUTOSTART}
-        XDEBUG_MAXNESTING_LEVEL: ${XDEBUG_MAXNESTING_LEVEL}
-        XDEBUG_REMOTE_CONNECT_BACK: ${XDEBUG_REMOTE_CONNECT_BACK}
-        XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
-        PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
-      networks:
-        - default
-        - internal
-        - external
-      volumes:
-        - ${PROJECT_VOLUME}:/var/www:rw,cached
-      links:
-        - db:db
   php:
     container_name: ${PROJECT_NAME}_php
     build:
-      args:
       context: .
       dockerfile: ./build/php/Dockerfile
     working_dir: /var/www

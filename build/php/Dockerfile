@@ -80,7 +80,7 @@ RUN useradd -u 1000 -ms /bin/bash -g www www
 RUN chown -R www.www /var/www
 RUN chmod -R 755 /var/www
 
-COPY /build/php/conf/php.ini /usr/local/etc/php
+COPY /build/php/conf.d/php.ini /usr/local/etc/php
 
 WORKDIR /var/www
 COPY . $PROJECT_VOLUMES
